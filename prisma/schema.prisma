@@ -1,0 +1,240 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  avatar    String?
+  address   String?
+  phone     String?
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relation
+  projects Project[]
+  memberships Members[]
+  invites Invites[]
+  wbsAccess WBSAccess[]
+
+  @@index([email])
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  description String?
+  projectCode String
+  logo       String?
+  status    String
+  startDate String
+  endDate   String
+  address   String
+
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  stakeholders StakeHolders[]
+  invites      Invites[]
+  members      Members[]
+  wbs          WBS[]
+}
+
+model StakeHolders {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  role      String
+  projectId String
+
+  project   Project  @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model Invites {
+  id        String   @id @default(cuid())
+  email     String
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  status    InviteStatus  @default(PENDING)
+  expiresAt String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Members {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  role     String
+
+  user      User     @relation(fields: [userId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model WBS {
+  id             String    @id @default(cuid())
+  name           String
+  sequenceNumber String
+  level          Int
+  description    String?
+  vistaCode      String?
+  cost           Decimal?  @db.Decimal(10, 2)  // using Decimal for precise monetary values
+  currency       String?   // store currency codes (e.g., USD, EUR)
+  createdBy      String    // Consider making this a relation if you want to reference a User model
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  projectId      String
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Self-referential relation to form a tree structure
+  parent         WBS?      @relation("WBSChildren", fields: [parentId], references: [id])
+  parentId       String?
+  children       WBS[]     @relation("WBSChildren")
+
+  access         WBSAccess[]
+
+  // Indexes to speed up common queries
+  @@index([projectId])
+  @@index([parentId])
+  @@index([sequenceNumber])
+}
+
+enum WBSAccessRole {
+  VIEWER  // can only view
+  EDITOR  // can view and edit
+  ADMIN   // can view, edit, delete, and give access to other users
+}
+
+model WBSAccess {
+  id          String         @id @default(cuid())
+  userId      String
+  wbsId       String
+  role        WBSAccessRole  @default(VIEWER)
+  isInherited Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wbs         WBS            @relation(fields: [wbsId], references: [id], onDelete: Cascade)
+
+  @@unique([wbsId, userId])
+  @@index([userId])
+}
+
+
+// ENUMS
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+enum ColumnType {
+  TEXT
+  NUMBER
+  SELECT
+  DATE
+  MULTI_SELECT
+  CHECKBOX
+}
+
+
+// SHEET
+model Sheet {
+  id          String      @id @default(cuid())
+  sheetName   String
+  description String      @default("")
+  visibility  Visibility  @default(PRIVATE)
+  metadata    Json        @default("{}")
+  hiddenColumns String[]  @default([])
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  columns   Column[]
+  rows      Row[]
+}
+
+
+// COLUMN
+model Column {
+  id          String      @id @default(uuid())
+  sheetId     String
+  title       String
+  type        ColumnType
+  options     String[]    @default([])
+  editable    Boolean     @default(true)
+  sortable    Boolean     @default(true)
+  sort        SortOrder?
+  width       Int?
+  minWidth    Int?
+  maxWidth    Int?
+  resizable   Boolean     @default(true)
+  align       String      @default("left")
+  defaultSortOrder SortOrder?
+
+  formatOptions Json?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  sheet       Sheet       @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+
+  @@index([sheetId])
+}
+
+// ROW
+model Row {
+  id          String      @id @default(uuid())
+  sheetId     String
+  cells       Json
+  customStyles Json?       @default("{}")
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  sheet       Sheet       @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+
+  @@index([sheetId])
+}
