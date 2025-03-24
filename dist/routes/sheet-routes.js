@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const sheet_controller_1 = require("../controllers/sheet-controller");
+const sheetRoutes = (0, express_1.Router)({ mergeParams: true });
+sheetRoutes.get("/", sheet_controller_1.getSheetsHandler);
+sheetRoutes.post("/", sheet_controller_1.createSheetHandler);
+sheetRoutes.get("/:sheetId", sheet_controller_1.getSheetHandler);
+sheetRoutes.put("/:sheetId", sheet_controller_1.updateSheetHandler);
+sheetRoutes.delete("/:sheetId", sheet_controller_1.deleteSheetHandler);
+sheetRoutes.post("/:sheetId/columns", sheet_controller_1.addColumnHandler);
+sheetRoutes.put("/:sheetId/columns/:columnId", sheet_controller_1.updateColumnHandler);
+sheetRoutes.delete("/:sheetId/columns/:columnId", sheet_controller_1.deleteColumnHandler);
+sheetRoutes.post("/:sheetId/rows", sheet_controller_1.addRowHandler);
+sheetRoutes.put("/:sheetId/rows/:rowId", sheet_controller_1.updateRowHandler);
+sheetRoutes.delete("/:sheetId/rows/:rowId", sheet_controller_1.deleteRowHandler);
+exports.default = sheetRoutes;

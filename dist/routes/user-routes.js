@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const user_controller_1 = require("../controllers/user-controller");
+const userRouter = (0, express_1.Router)({ mergeParams: true });
+userRouter.post("/register", user_controller_1.createUser);
+userRouter.post("/login", user_controller_1.login);
+userRouter.post("/logout", user_controller_1.logout);
+userRouter.get("/profile", user_controller_1.fetchProfile);
+userRouter.put("/profile", user_controller_1.updateProfile);
+userRouter.put("/change-password", user_controller_1.updatePassword);
+userRouter.post("/invite/accept", user_controller_1.AcceptInvite);
+userRouter.post("/invite/reject", user_controller_1.RejectInvite);
+exports.default = userRouter;

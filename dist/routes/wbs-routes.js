@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const wbs_controller_1 = require("../controllers/wbs-controller");
+const wbsRouter = (0, express_1.Router)({ mergeParams: true });
+wbsRouter.get("/", wbs_controller_1.getProjectWBSHandler);
+wbsRouter.post("/", wbs_controller_1.createWBSHandler);
+wbsRouter.get("/user", wbs_controller_1.getProjectUserWBSHandler);
+wbsRouter.put("/:wbsId", wbs_controller_1.updateWBSHandler);
+wbsRouter.post("/:wbsId/access/add", wbs_controller_1.addAccessHandler);
+wbsRouter.post("/:wbsId/access/remove", wbs_controller_1.removeAccessHandler);
+exports.default = wbsRouter;
