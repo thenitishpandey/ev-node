@@ -143,8 +143,8 @@ exports.addColumnHandler = addColumnHandler;
 const updateColumnHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const columnId = req.params.columnId;
-        const { title, type } = req.body;
-        const column = yield sheets_services_1.default.updateColumn(columnId, { title, type });
+        const { title, type, options } = req.body;
+        const column = yield sheets_services_1.default.updateColumn(columnId, { title, type, options });
         res.status(200).json(column);
     }
     catch (err) {
