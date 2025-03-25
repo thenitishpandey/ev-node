@@ -174,6 +174,7 @@ enum ColumnType {
   DATE
   MULTI_SELECT
   CHECKBOX
+  BOOLEAN
 }
 
 

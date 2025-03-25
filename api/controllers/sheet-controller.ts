@@ -131,8 +131,8 @@ export const addColumnHandler = async (req: Request, res: Response) => {
 export const updateColumnHandler = async (req: Request, res: Response) => {
     try {
         const columnId = req.params.columnId;
-        const { title, type } = req.body;
-        const column = await sheetsServices.updateColumn(columnId, { title, type });
+        const { title, type, options } = req.body;
+        const column = await sheetsServices.updateColumn(columnId, { title, type, options });
         res.status(200).json(column);
     } catch (err) {
         console.log(err);

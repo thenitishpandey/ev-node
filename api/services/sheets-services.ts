@@ -65,7 +65,10 @@ class SheetServices {
     }
 
     // Update a column
-    async updateColumn(columnId: string, data: Partial<{ title: string; type: ColumnType }>) {
+    async updateColumn(
+        columnId: string,
+        data: Partial<{ title: string; type: ColumnType; options: string[] }>
+    ) {
         return await prisma.column.update({
             where: { id: columnId },
             data,
